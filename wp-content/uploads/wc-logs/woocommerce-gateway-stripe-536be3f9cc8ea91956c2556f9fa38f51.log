@@ -1,0 +1,144 @@
+02-02-2017 @ 20:46:34 - Info: Begin processing payment for order 10 for the amount of 21.13
+02-02-2017 @ 20:46:34 - charges request: Array
+(
+    [currency] => usd
+    [amount] => 2113
+    [description] => WebD173 - Order 10
+    [capture] => true
+    [expand[]] => balance_transaction
+    [source] => tok_19irTRBFwVlJM6A3csM9dUdf
+)
+
+02-02-2017 @ 20:46:35 - Processing response: stdClass Object
+(
+    [id] => ch_19irTTBFwVlJM6A3fxqH3ugI
+    [object] => charge
+    [amount] => 2113
+    [amount_refunded] => 0
+    [application] => 
+    [application_fee] => 
+    [balance_transaction] => stdClass Object
+        (
+            [id] => txn_19irTTBFwVlJM6A3ASMRovuK
+            [object] => balance_transaction
+            [amount] => 2113
+            [available_on] => 1486598400
+            [created] => 1486068395
+            [currency] => usd
+            [description] => WebD173 - Order 10
+            [fee] => 91
+            [fee_details] => Array
+                (
+                    [0] => stdClass Object
+                        (
+                            [amount] => 91
+                            [application] => 
+                            [currency] => usd
+                            [description] => Stripe processing fees
+                            [type] => stripe_fee
+                        )
+
+                )
+
+            [net] => 2022
+            [source] => ch_19irTTBFwVlJM6A3fxqH3ugI
+            [sourced_transfers] => stdClass Object
+                (
+                    [object] => list
+                    [data] => Array
+                        (
+                        )
+
+                    [has_more] => 
+                    [total_count] => 0
+                    [url] => /v1/transfers?source_transaction=ch_19irTTBFwVlJM6A3fxqH3ugI
+                )
+
+            [status] => pending
+            [type] => charge
+        )
+
+    [captured] => 1
+    [created] => 1486068395
+    [currency] => usd
+    [customer] => 
+    [description] => WebD173 - Order 10
+    [destination] => 
+    [dispute] => 
+    [failure_code] => 
+    [failure_message] => 
+    [fraud_details] => stdClass Object
+        (
+        )
+
+    [invoice] => 
+    [livemode] => 
+    [metadata] => stdClass Object
+        (
+        )
+
+    [order] => 
+    [outcome] => stdClass Object
+        (
+            [network_status] => approved_by_network
+            [reason] => 
+            [risk_level] => normal
+            [seller_message] => Payment complete.
+            [type] => authorized
+        )
+
+    [paid] => 1
+    [receipt_email] => 
+    [receipt_number] => 
+    [refunded] => 
+    [refunds] => stdClass Object
+        (
+            [object] => list
+            [data] => Array
+                (
+                )
+
+            [has_more] => 
+            [total_count] => 0
+            [url] => /v1/charges/ch_19irTTBFwVlJM6A3fxqH3ugI/refunds
+        )
+
+    [review] => 
+    [shipping] => 
+    [source] => stdClass Object
+        (
+            [id] => card_19irTRBFwVlJM6A3KtVTFf7e
+            [object] => card
+            [address_city] => San Diego
+            [address_country] => US
+            [address_line1] => 2003 Third Avenue
+            [address_line1_check] => pass
+            [address_line2] => 
+            [address_state] => CA
+            [address_zip] => 92101
+            [address_zip_check] => pass
+            [brand] => Visa
+            [country] => US
+            [customer] => 
+            [cvc_check] => pass
+            [dynamic_last4] => 
+            [exp_month] => 4
+            [exp_year] => 2022
+            [fingerprint] => QhWrh3xa0Q8v1GFL
+            [funding] => credit
+            [last4] => 4242
+            [metadata] => stdClass Object
+                (
+                )
+
+            [name] => Grant Holcombe
+            [tokenization_method] => 
+        )
+
+    [source_transfer] => 
+    [statement_descriptor] => 
+    [status] => succeeded
+    [transfer_group] => 
+)
+
+02-02-2017 @ 20:46:36 - Success: Stripe charge complete (Charge ID: ch_19irTTBFwVlJM6A3fxqH3ugI)
