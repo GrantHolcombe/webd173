@@ -286,3 +286,148 @@
 )
 
 02-02-2017 @ 21:00:31 - Success: Stripe charge complete (Charge ID: ch_19irgwBFwVlJM6A3Gr2rYc9G)
+02-09-2017 @ 03:08:25 - Info: Begin processing payment for order 21 for the amount of 18.98
+02-09-2017 @ 03:08:25 - charges request: Array
+(
+    [currency] => usd
+    [amount] => 1898
+    [description] => WebD173 - Order 21
+    [capture] => true
+    [expand[]] => balance_transaction
+    [source] => tok_19l8IGBFwVlJM6A3xzMDuKXg
+)
+
+02-09-2017 @ 03:08:26 - Processing response: stdClass Object
+(
+    [id] => ch_19l8IHBFwVlJM6A3qxCnFgKv
+    [object] => charge
+    [amount] => 1898
+    [amount_refunded] => 0
+    [application] => 
+    [application_fee] => 
+    [balance_transaction] => stdClass Object
+        (
+            [id] => txn_19l8IHBFwVlJM6A3Qx3SGNU9
+            [object] => balance_transaction
+            [amount] => 1898
+            [available_on] => 1487203200
+            [created] => 1486609705
+            [currency] => usd
+            [description] => WebD173 - Order 21
+            [fee] => 85
+            [fee_details] => Array
+                (
+                    [0] => stdClass Object
+                        (
+                            [amount] => 85
+                            [application] => 
+                            [currency] => usd
+                            [description] => Stripe processing fees
+                            [type] => stripe_fee
+                        )
+
+                )
+
+            [net] => 1813
+            [source] => ch_19l8IHBFwVlJM6A3qxCnFgKv
+            [sourced_transfers] => stdClass Object
+                (
+                    [object] => list
+                    [data] => Array
+                        (
+                        )
+
+                    [has_more] => 
+                    [total_count] => 0
+                    [url] => /v1/transfers?source_transaction=ch_19l8IHBFwVlJM6A3qxCnFgKv
+                )
+
+            [status] => pending
+            [type] => charge
+        )
+
+    [captured] => 1
+    [created] => 1486609705
+    [currency] => usd
+    [customer] => 
+    [description] => WebD173 - Order 21
+    [destination] => 
+    [dispute] => 
+    [failure_code] => 
+    [failure_message] => 
+    [fraud_details] => stdClass Object
+        (
+        )
+
+    [invoice] => 
+    [livemode] => 
+    [metadata] => stdClass Object
+        (
+        )
+
+    [on_behalf_of] => 
+    [order] => 
+    [outcome] => stdClass Object
+        (
+            [network_status] => approved_by_network
+            [reason] => 
+            [risk_level] => normal
+            [seller_message] => Payment complete.
+            [type] => authorized
+        )
+
+    [paid] => 1
+    [receipt_email] => 
+    [receipt_number] => 
+    [refunded] => 
+    [refunds] => stdClass Object
+        (
+            [object] => list
+            [data] => Array
+                (
+                )
+
+            [has_more] => 
+            [total_count] => 0
+            [url] => /v1/charges/ch_19l8IHBFwVlJM6A3qxCnFgKv/refunds
+        )
+
+    [review] => 
+    [shipping] => 
+    [source] => stdClass Object
+        (
+            [id] => card_19l8IGBFwVlJM6A3dHnKhkQl
+            [object] => card
+            [address_city] => San Diego
+            [address_country] => US
+            [address_line1] => 2003 Third Avenue
+            [address_line1_check] => pass
+            [address_line2] => 
+            [address_state] => CA
+            [address_zip] => 92101
+            [address_zip_check] => pass
+            [brand] => Visa
+            [country] => US
+            [customer] => 
+            [cvc_check] => pass
+            [dynamic_last4] => 
+            [exp_month] => 2
+            [exp_year] => 2022
+            [fingerprint] => QhWrh3xa0Q8v1GFL
+            [funding] => credit
+            [last4] => 4242
+            [metadata] => stdClass Object
+                (
+                )
+
+            [name] => Grant Holcombe
+            [tokenization_method] => 
+        )
+
+    [source_transfer] => 
+    [statement_descriptor] => 
+    [status] => succeeded
+    [transfer_group] => 
+)
+
+02-09-2017 @ 03:08:26 - Success: Stripe charge complete (Charge ID: ch_19l8IHBFwVlJM6A3qxCnFgKv)
