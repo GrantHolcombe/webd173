@@ -1,3 +1,748 @@
+/* Ruler start */
+
+function Ruler(options) {
+    this.api = this.builder();
+    this.api.constructRulers.call(this, options);
+}
+
+Ruler.prototype.builder = function () {
+    var VERTICAL = 1,
+        HORIZONTAL = 2,
+        CUR_DELTA_X = 0,
+        CUR_DELTA_Y = 0,
+        CUR_SCALE = 1;
+
+    var options,
+        rulerz = {},
+        guides = [],
+        theRulerDOM = document.createElement('div'),
+        corners = [],
+        defaultOptions = {
+            rulerHeight: 15,
+            fontFamily: 'arial',
+            fontSize: '8px',
+            strokeStyle: 'gray',
+            sides: ['top', 'left'],
+            cornerSides: ['TL'],
+            lineWidth: 1,
+            enableMouseTracking: true,
+            enableToolTip: true
+        };
+
+    var rotateRuler = function (curRuler, angle) {
+        var rotation = 'rotate(' + angle + 'deg)';
+        var origin = Ruler.prototype.utils.pixelize(Math.abs(parseInt(curRuler.canvas.style.left))) + ' 100%';
+        curRuler.canvas.style.webkitTransform = rotation;
+        curRuler.canvas.style.MozTransform = rotation;
+        curRuler.canvas.style.OTransform = rotation;
+        curRuler.canvas.style.msTransform = rotation;
+        curRuler.canvas.style.transform = rotation;
+        curRuler.canvas.style.webkitTransformOrigin = origin;
+        curRuler.canvas.style.MozTransformOrigin = origin;
+        curRuler.canvas.style.OTransformOrigin = origin;
+        curRuler.canvas.style.msTransformOrigin = origin;
+        curRuler.canvas.style.transformOrigin = origin;
+
+    };
+
+    var positionRuler = function (curRuler, alignment) {
+        curRuler.canvas.style.left = Ruler.prototype.utils.pixelize(-((curRuler.canvas.width / 2) - curRuler.canvas.height));
+        switch (alignment) {
+            case 'top':
+                curRuler.orgPos = parseInt(curRuler.canvas.style.left);
+                break;
+            case 'left':
+                curRuler.canvas.style.top = Ruler.prototype.utils.pixelize(-curRuler.canvas.height - 1);
+                curRuler.orgPos = parseInt(curRuler.canvas.style.top);
+                rotateRuler(curRuler, 90);
+                break;
+        }
+    };
+
+    var attachListeners = function (container, curRul) {
+        var mousedown = function (e) {
+            constructGuide(curRul.dimension, e.clientX, e.clientY, e);
+
+        };
+
+        curRul.canvas.addEventListener('mousedown', mousedown);
+        curRul.clearListeners = function () {
+            curRul.canvas.removeEventListener('mousedown', mousedown);
+        }
+    };
+
+    var constructGuide = function (dimension, x, y, e) {
+        var guideIndex;
+        var moveCB = function (line, x, y) {
+            var coor = line.dimension === VERTICAL ? x : y;
+            if (!line.assigned()) {
+                if (coor > options.rulerHeight) {
+                    line.assigned(true);
+                }
+                return;
+            }
+
+            if (coor < options.rulerHeight) {
+                guides.some(function (guideLine, index) {
+                    if (guideLine.line === line) {
+                        guideIndex = index;
+                        return true;
+                    }
+                });
+                line.destroy();
+                guides.splice(guideIndex, 1);
+
+            }
+        };
+
+        var guide = document.createElement('div'),
+            guideStyle = dimension === VERTICAL ? 'rul_lineVer' : 'rul_lineHor',
+            curDelta = dimension === VERTICAL ? CUR_DELTA_X : CUR_DELTA_Y;
+        guide.title = 'Double click to delete';
+        Ruler.prototype.utils.addClasss(guide, ['rul_line', guideStyle]);
+        guide = theRulerDOM.appendChild(guide);
+        if (dimension === VERTICAL) {
+            guide.style.left = Ruler.prototype.utils.pixelize(x - options.container.getBoundingClientRect().left);
+        }
+        else {
+            guide.style.top = Ruler.prototype.utils.pixelize(y - options.container.getBoundingClientRect().top);
+        }
+        guides.push({
+            dimension: dimension,
+            line: Ruler.prototype.guideLine(guide, options.container.querySelector('.rul_wrapper'), dimension, options, curDelta, moveCB, e)
+        });
+    };
+
+
+    var constructRuler = function (container, alignment) {
+        var canvas,
+            dimension = alignment === 'left' || alignment === 'right' ? VERTICAL : HORIZONTAL,
+            rulerStyle = dimension === VERTICAL ? 'rul_ruler_Vertical' : 'rul_ruler_Horizontal',
+            element = document.createElement('canvas');
+
+
+        Ruler.prototype.utils.addClasss(element, ['rul_ruler', rulerStyle, 'rul_align_' + alignment]);
+        canvas = container.appendChild(element);
+        rulerz[alignment] = Ruler.prototype.rulerConstructor(canvas, options, dimension);
+        rulerz[alignment].drawRuler(container.offsetWidth, options.rulerHeight);
+        positionRuler(rulerz[alignment], alignment);
+        attachListeners(container, rulerz[alignment]);
+    };
+
+    var constructCorner = (function () {
+        function cornerDraw(container, side) {
+            var corner = document.createElement('div'),
+                cornerStyle = 'rul_corner' + side.toUpperCase();
+
+            corner.title = 'Clear Guide lines';
+            Ruler.prototype.utils.addClasss(corner, ['rul_corner', cornerStyle]);
+            corner.style.width = Ruler.prototype.utils.pixelize(options.rulerHeight + 1);
+            corner.style.height = Ruler.prototype.utils.pixelize(options.rulerHeight);
+            return container.appendChild(corner);
+
+        }
+
+        function mousedown(e) {
+            e.stopPropagation();
+            clearGuides();
+        }
+
+        return function (container, cornerSides) {
+            cornerSides.forEach(function (side) {
+                var corner = cornerDraw(container, side);
+                corner.addEventListener('mousedown', mousedown);
+                corner.destroy = function () {
+                    corner.removeEventListener('mousedown', mousedown);
+                    corner.parentNode.removeChild(corner);
+                };
+
+                corners.push(corner);
+            })
+        }
+
+    })();
+
+    var mouseup = function (e) {
+        guides.forEach(function (guide) {
+            guide.line.stopDrag();
+        })
+    };
+
+    var constructRulers = function (curOptions) {
+        theRulerDOM = Ruler.prototype.utils.addClasss(theRulerDOM, 'rul_wrapper');
+        options = Ruler.prototype.utils.extend(defaultOptions, curOptions);
+        theRulerDOM = options.container.appendChild(theRulerDOM);
+        options.sides.forEach(function (side) {
+            constructRuler(theRulerDOM, side);
+        });
+        constructCorner(theRulerDOM, options.cornerSides);
+        options.container.addEventListener('mouseup', mouseup);
+
+
+    };
+
+    var forEachRuler = function (cb) {
+        var index = 0;
+        for (var rul in rulerz) {
+            if (rulerz.hasOwnProperty(rul)) {
+                cb(rulerz[rul], index++);
+            }
+        }
+    };
+
+
+    var setPos = function (values) {
+        var orgX = 0,
+            orgY,
+            deltaX = 0,
+            deltaY = 0;
+        forEachRuler(function (curRul) {
+            if (curRul.dimension === VERTICAL) {
+                orgY = curRul.canvas.style.top;
+                curRul.canvas.style.top = Ruler.prototype.utils.pixelize(curRul.orgPos + (parseInt(values.y)));
+                deltaY = parseInt(orgY) - parseInt(curRul.canvas.style.top);
+            }
+            else {
+                orgX = curRul.canvas.style.left;
+                curRul.canvas.style.left = Ruler.prototype.utils.pixelize(curRul.orgPos + (parseInt(values.x)));
+                deltaX = parseInt(orgX) - parseInt(curRul.canvas.style.left);
+            }
+        });
+        guides.forEach(function (guide) {
+            if (guide.dimension === HORIZONTAL) {
+                guide.line.guideLine.style.top = Ruler.prototype.utils.pixelize(parseInt(guide.line.guideLine.style.top) - deltaY);
+                guide.line.curPosDelta(parseInt(values.y));
+            }
+            else {
+                guide.line.guideLine.style.left = Ruler.prototype.utils.pixelize(parseInt(guide.line.guideLine.style.left) - deltaX);
+                guide.line.curPosDelta(parseInt(values.x));
+            }
+        });
+        CUR_DELTA_X = parseInt(values.x);
+        CUR_DELTA_Y = parseInt(values.y);
+
+    };
+
+    var setScale = function (newScale) {
+        var curPos, orgDelta, curScaleFac;
+        forEachRuler(function (rul) {
+            rul.context.clearRect(0, 0, rul.canvas.width, rul.canvas.height);
+            rul.context.beginPath();
+            rul.setScale(newScale);
+            rul.context.stroke();
+            CUR_SCALE = newScale;
+        });
+
+        guides.forEach(function (guide) {
+            if (guide.dimension === HORIZONTAL) {
+                curPos = parseInt(guide.line.guideLine.style.top);
+                orgDelta = options.rulerHeight + 1;
+                curScaleFac = (parseFloat(newScale) / guide.line.curScale());
+                guide.line.guideLine.style.top = Ruler.prototype.utils.pixelize(((curPos - orgDelta - CUR_DELTA_Y ) / curScaleFac) + orgDelta + CUR_DELTA_Y);
+                guide.line.curScale(newScale);
+            }
+            else {
+                curPos = parseInt(guide.line.guideLine.style.left);
+                orgDelta = options.rulerHeight + 1;
+                curScaleFac = (parseFloat(newScale) / guide.line.curScale());
+                guide.line.guideLine.style.left = Ruler.prototype.utils.pixelize(((curPos - orgDelta - CUR_DELTA_X) / curScaleFac) + orgDelta + CUR_DELTA_X);
+                guide.line.curScale(newScale);
+            }
+        });
+    };
+
+
+    var clearGuides = function () {
+        guides.forEach(function (guide) {
+            guide.line.destroy();
+        });
+        guides = [];
+    };
+
+    var toggleGuideVisibility = function (val) {
+        var func = val ? 'show' : 'hide';
+        guides.forEach(function (guide) {
+            guide.line[func]();
+        });
+    };
+
+    var toggleRulerVisibility = function (val) {
+        var state = val ? 'block' : 'none';
+        theRulerDOM.style.display = state;
+        var trackers = options.container.querySelectorAll('.rul_tracker');
+        if (trackers.length > 0) {
+            trackers[0].style.display = state;
+            trackers[1].style.display = state;
+        }
+
+    };
+
+    var getGuides = function () {
+        return guides.map(function (guide) {
+            return {
+                posX: Math.round((parseInt(guide.line.guideLine.style.left) - CUR_DELTA_X - options.rulerHeight) * CUR_SCALE),
+                posY: Math.round((parseInt(guide.line.guideLine.style.top) - CUR_DELTA_Y - options.rulerHeight) * CUR_SCALE),
+                dimension: guide.dimension
+            }
+        });
+    };
+
+    var setGuides = function (_guides) {
+        if (!_guides) {
+            return
+        }
+        _guides.forEach(function (guide) {
+            constructGuide(guide.dimension, guide.posX, guide.posY)
+        })
+
+    };
+
+    var destroy = function () {
+        clearGuides();
+        forEachRuler(function (ruler) {
+            ruler.destroy();
+        });
+        corners.forEach(function (corner) {
+            corner.destroy();
+        });
+        options.container.removeEventListener('mouseup', mouseup);
+        theRulerDOM.parentNode.removeChild(theRulerDOM);
+    };
+
+    return {
+        VERTICAL: VERTICAL,
+        HORIZONTAL: HORIZONTAL,
+        setPos: setPos,
+        setScale: setScale,
+        clearGuides: clearGuides,
+        getGuides: getGuides,
+        setGuides: setGuides,
+        constructRulers: constructRulers,
+        toggleRulerVisibility: toggleRulerVisibility,
+        toggleGuideVisibility: toggleGuideVisibility,
+        destroy: destroy
+    }
+};
+
+Ruler.prototype.rulerConstructor = function (_canvas, options, rulDimension) {
+
+    var canvas = _canvas,
+        context = canvas.getContext('2d'),
+        rulThickness = 0,
+        rulLength = 0,
+        rulScale = 1,
+        dimension = rulDimension || 2,
+        orgPos = 0,
+        tracker = document.createElement('div');
+
+    var getLength = function () {
+        return rulLength;
+    };
+
+    var getThickness = function () {
+        return rulThickness;
+    };
+
+    var getScale = function () {
+        return rulScale;
+    };
+
+    var setScale = function (newScale) {
+        rulScale = parseFloat(newScale);
+        drawPoints();
+        return rulScale;
+    };
+
+    var drawRuler = function (_rulerLength, _rulerThickness, _rulerScale) {
+        rulLength = canvas.width = _rulerLength * 4;
+        rulThickness = canvas.height = _rulerThickness;
+        rulScale = _rulerScale || rulScale;
+        context.strokeStyle = options.strokeStyle;
+        context.font = options.fontSize + ' ' + options.fontFamily;
+        context.lineWidth = options.lineWidth;
+        context.beginPath();
+        drawPoints();
+        context.stroke();
+    };
+
+
+    var drawPoints = function () {
+        var pointLength = 0,
+            label = '',
+            delta = 0,
+            draw = false,
+            lineLengthMax = 0,
+            lineLengthMed = rulThickness / 2,
+            lineLengthMin = rulThickness / 2;
+
+        for (var pos = 0; pos <= rulLength; pos += 1) {
+            delta = ((rulLength / 2) - pos);
+            draw = false;
+            label = '';
+
+            if (delta % 50 === 0) {
+                pointLength = lineLengthMax;
+                label = Math.round(Math.abs(delta) * rulScale);
+                draw = true;
+            }
+            else if (delta % 25 === 0) {
+                pointLength = lineLengthMed;
+                draw = true;
+            }
+            else if (delta % 5 === 0) {
+                pointLength = lineLengthMin;
+                draw = true;
+            }
+            if (draw) {
+                context.moveTo(pos + 0.5, rulThickness + 0.5);
+                context.lineTo(pos + 0.5, pointLength + 0.5);
+                context.fillText(label, pos + 1.5, (rulThickness / 2) + 1);
+            }
+        }
+    };
+
+    var mousemove = function (e) {
+        var posX = e.clientX;
+        var posY = e.clientY;
+        if (dimension === 2) {
+            tracker.style.left = Ruler.prototype.utils.pixelize(posX - parseInt(options.container.getBoundingClientRect().left));
+        }
+        else {
+            tracker.style.top = Ruler.prototype.utils.pixelize(posY - parseInt(options.container.getBoundingClientRect().top));
+        }
+    };
+
+    var destroy = function () {
+        options.container.removeEventListener('mousemove', mousemove);
+        tracker.parentNode.removeChild(tracker);
+        this.clearListeners && this.clearListeners();
+
+    };
+
+    var initTracker = function () {
+        tracker = options.container.appendChild(tracker);
+        Ruler.prototype.utils.addClasss(tracker, 'rul_tracker');
+        var height = Ruler.prototype.utils.pixelize(options.rulerHeight);
+        if (dimension === 2) {
+            tracker.style.height = height;
+        }
+        else {
+            tracker.style.width = height;
+        }
+
+        options.container.addEventListener('mousemove', mousemove);
+    };
+
+    if (options.enableMouseTracking) {
+        initTracker();
+    }
+
+
+    return {
+        getLength: getLength,
+        getThickness: getThickness,
+        getScale: getScale,
+        setScale: setScale,
+        dimension: dimension,
+        orgPos: orgPos,
+        canvas: canvas,
+        context: context,
+        drawRuler: drawRuler,
+        drawPoints: drawPoints,
+        destroy: destroy
+    }
+};
+
+Ruler.prototype.guideLine = function (line, _dragContainer, lineDimension, options, curDelta, moveCB, event) {
+
+    var self,
+        guideLine = line,
+        _curScale = 1,
+        _assigned = false,
+        _curPosDelta = curDelta || 0,
+        dragContainer = _dragContainer,
+        dimension = lineDimension || 2,
+        moveCB = moveCB || function () {
+            };
+
+
+    var curPosDelta = function (val) {
+        if (typeof val === 'undefined') {
+            return _curPosDelta;
+        }
+        return (_curPosDelta = val);
+    };
+
+    var assigned = function (val) {
+        if (typeof val === 'undefined') {
+            return _assigned;
+        }
+        return (_assigned = val);
+    };
+
+    var curScale = function (val) {
+        if (typeof val === 'undefined') {
+            return _curScale;
+        }
+        return (_curScale = val);
+    };
+
+
+    var draggable = (function () {
+        return {
+            move: function (xpos, ypos) {
+                guideLine.style.left = Ruler.prototype.utils.pixelize(xpos);
+                guideLine.style.top = Ruler.prototype.utils.pixelize(ypos);
+                updateToolTip(xpos, ypos);
+                moveCB(self, xpos, ypos);
+            },
+            startMoving: function (evt) {
+                Ruler.prototype.utils.addClasss(guideLine, ['rul_line_dragged']);
+                evt = evt || window.event;
+                var posX = evt ? evt.clientX : 0,
+                    posY = evt ? evt.clientY : 0,
+                    divTop = parseInt(guideLine.style.top || 0),
+                    divLeft = parseInt(guideLine.style.left || 0),
+                    eWi = parseInt(guideLine.offsetWidth),
+                    eHe = parseInt(guideLine.offsetHeight),
+                    cWi = parseInt(dragContainer.offsetWidth),
+                    cHe = parseInt(dragContainer.offsetHeight),
+                    cursor = dimension === 2 ? 'ns-resize' : 'ew-resize';
+
+                options.container.style.cursor = cursor;
+                guideLine.style.cursor = cursor;
+                var diffX = posX - divLeft,
+                    diffY = posY - divTop;
+                document.onmousemove = function moving(evt) {
+                    evt = evt || window.event;
+                    var posX = evt.clientX,
+                        posY = evt.clientY,
+                        aX = posX - diffX,
+                        aY = posY - diffY;
+
+                    if (aX < 0) {
+                        aX = 0;
+                    }
+                    if (aY < 0) {
+                        aY = 0;
+                    }
+
+                    if (aX + eWi > cWi) {
+                        aX = cWi - eWi;
+                    }
+                    if (aY + eHe > cHe) {
+                        aY = cHe - eHe;
+                    }
+
+                    draggable.move(aX, aY);
+                };
+                showToolTip();
+            },
+            stopMoving: function () {
+                options.container.style.cursor = null;
+                guideLine.style.cursor = null;
+                document.onmousemove = function () {
+                };
+                hideToolTip();
+                Ruler.prototype.utils.removeClasss(guideLine, ['rul_line_dragged']);
+            }
+        }
+    })();
+
+    var showToolTip = function (e) {
+        if (!options.enableToolTip) {
+            return;
+        }
+        Ruler.prototype.utils.addClasss(guideLine, 'rul_tooltip');
+    };
+
+    var updateToolTip = function (x, y) {
+        if (y) {
+            guideLine.dataset.tip = 'Y: ' + Math.round((y - options.rulerHeight - 1 - _curPosDelta) * _curScale) + ' px';
+        }
+        else {
+            guideLine.dataset.tip = 'X: ' + Math.round((x - options.rulerHeight - 1 - _curPosDelta) * _curScale) + ' px';
+        }
+    };
+
+    var hideToolTip = function (e) {
+        Ruler.prototype.utils.removeClasss(guideLine, 'rul_tooltip');
+    };
+
+    var destroy = function () {
+        draggable.stopMoving();
+        moveCB = null;
+        guideLine.removeEventListener('mousedown', mousedown);
+        guideLine.removeEventListener('mouseup', mouseup);
+        guideLine.removeEventListener('dblclick', dblclick);
+        guideLine.parentNode && guideLine.parentNode.removeChild(guideLine);
+    };
+
+    var hide = function () {
+        guideLine.style.display = 'none';
+    };
+
+    var show = function () {
+        guideLine.style.display = 'block';
+    };
+
+    var mousedown = function (e) {
+        e.stopPropagation();
+        draggable.startMoving();
+    };
+
+    var mouseup = function (e) {
+        draggable.stopMoving();
+    };
+
+    var dblclick = function (e) {
+        e.stopPropagation();
+        destroy();
+    };
+
+    guideLine.addEventListener('mousedown', mousedown);
+
+    guideLine.addEventListener('mouseup', mouseup);
+
+    guideLine.addEventListener('dblclick', dblclick);
+    if (event) draggable.startMoving(event);
+
+    self = {
+        setAsDraggable: draggable,
+        startDrag: draggable.startMoving,
+        stopDrag: draggable.stopMoving,
+        destroy: destroy,
+        curScale: curScale,
+        assigned: assigned,
+        curPosDelta: curPosDelta,
+        guideLine: guideLine,
+        dimension: dimension,
+        hide: hide,
+        show: show
+    };
+    return self;
+
+};
+
+Ruler.prototype.utils = {
+    extend: function extend() {
+        for (var i = 1; i < arguments.length; i++)
+            for (var key in arguments[i])
+                if (arguments[i].hasOwnProperty(key))
+                    arguments[0][key] = arguments[i][key];
+        return arguments[0];
+    },
+    pixelize: function (val) {
+        return val + 'px';
+    },
+    prependChild: function (container, element) {
+        return container.insertBefore(element, container.firstChild);
+    },
+    addClasss: function (element, classNames) {
+        if (!(classNames instanceof Array)) {
+            classNames = [classNames];
+        }
+
+        classNames.forEach(function (name) {
+            element.className += ' ' + name;
+        });
+
+        return element;
+
+    },
+    removeClasss: function (element, classNames) {
+        var curCalsss = element.className;
+        if (!(classNames instanceof Array)) {
+            classNames = [classNames];
+        }
+
+        classNames.forEach(function (name) {
+            curCalsss = curCalsss.replace(name, '');
+        });
+        element.className = curCalsss;
+        return element;
+
+    }
+};
+
+jQuery(document).ready(function(){
+    if(document.querySelector('.ruler') !== null){
+        new Ruler({container: document.querySelector('.ruler')});
+        jQuery('.ruler').prepend(jQuery('.rul_wrapper, .rul_tracker'));
+    }
+
+    jQuery('label').on('click', function(){
+        jQuery(this).parent().find('input').click();
+    });
+});
+
+/* Ruler end */
+
+jQuery(window).load(function(){
+    var $scale,$translateX, $translateY;
+
+    jQuery('.ruler').width(+reslider["style"]["width"] + 100);
+    jQuery('.ruler').css({
+        maxWidth: jQuery('#general-view').width() + 100 + 'px'
+    });
+    
+    function adminCont() {
+        $scale = jQuery('.main-content').width() / +reslider["style"]["width"];
+        $translateX = (1 - jQuery('.main-content').width() / +reslider["style"]["width"]) * +reslider["style"]["width"] / 2;
+        $translateY = (1 - $scale) * +reslider["style"]["height"] / 2;
+
+        jQuery('#reslide-slider-construct').css({
+            'transform': 'translate(-' + $translateX + 'px, -' + $translateY + 'px) scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+
+        jQuery('.rul_ruler_Horizontal').css({
+            'transform': 'scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+
+        jQuery('.rul_ruler_Vertical').css({
+            'transform': 'rotate(90deg) scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+    }
+
+    if (jQuery('.main-content').width() <= +reslider["style"]["width"]) {
+        adminCont();
+    }
+    jQuery(window).resize(function () {
+        if (jQuery('.main-content').width() <= +reslider["style"]["width"]) {
+            adminCont();
+        }
+    });
+
+    jQuery('.width_text').html(+reslider["style"]["width"]);
+    jQuery('.height_text').html(+reslider["style"]["height"]);
+
+    jQuery('.width_text').css({
+        'left': jQuery('#reslide-slider-construct').width() - 10 + 'px'
+    });
+
+    jQuery('.height_text').css({
+        'top': jQuery('#reslide-slider-construct').height() - 10 + 'px',
+        'left': '-20px'
+    });
+
+    jQuery('#reslide-slider-construct').on('mousemove', function(e){
+        var $top = e.pageY - jQuery('#reslide-slider-construct').offset().top,
+            $left = e.pageX - jQuery('#reslide-slider-construct').offset().left;
+
+        jQuery("span.ruler_text").css({
+            display: 'block',
+            top: $top + 'px',
+            left: $left + 20 + 'px'
+        }).text(Math.round($left) + ", " + Math.round($top));
+    });
+
+    jQuery('#reslide-slider-construct').on('mouseleave ', function(e){
+        jQuery("span.ruler_text").css({
+            display: 'none'
+        });
+    });
+});
+
 function reslideOffset(elem) {
     function isWindow(obj) {
         return obj != null && obj === obj.window;
@@ -350,6 +1095,60 @@ function reslideDrawSlider() {
                 $Opacity:2
             }
             break;
+        case 16:
+            reslide_effect = {
+                $Duration: reslider["params"]["effect"]["duration"],
+                $Delay:20,
+                $Clip:12,
+                $SlideOut:true,
+                $Easing:{
+                    $Clip:$JssorEasing$.$EaseOutCubic,
+                    $Opacity:$JssorEasing$.$EaseLinear
+                },
+                $Assembly:260,
+                $Opacity:2
+            }
+            break;
+        case 17:
+            reslide_effect = {
+                $Duration: reslider["params"]["effect"]["duration"],
+                x:-1,
+                $Rows:6,
+                $Formation:$JssorSlideshowFormations$.$FormationStraight,
+                $ChessMode:{
+                    $Row:3
+                }
+            }
+            break;
+        case 18:
+            reslide_effect = {
+                $Duration: reslider["params"]["effect"]["duration"],
+                y:-1,
+                $Cols:12,
+                $Formation:$JssorSlideshowFormations$.$FormationStraight,
+                $ChessMode:{
+                    $Column:12
+                }
+            }
+            break;
+        case 19:
+            reslide_effect = {
+                $Duration: reslider["params"]["effect"]["duration"],
+                $Delay:100,
+                $Rows:7,
+                $Formation:$JssorSlideshowFormations$.$FormationStraight,
+                $Opacity:2
+            }
+            break;
+        case 20:
+            reslide_effect = {
+                $Duration: reslider["params"]["effect"]["duration"],
+                $Delay:100,
+                $Cols:10,
+                $Formation:$JssorSlideshowFormations$.$FormationStraight,
+                $Opacity:2
+            }
+            break;
     }
 
     var _SlideshowTransitions = [
@@ -457,7 +1256,7 @@ function reslideDrawSlider() {
                 /*** title ***/
 
                 var itemtitle = _reslide();
-                itemtitle.addClass('reslidetitle').addStyle("position:absolute;overflow:hidden;z-index:1;width:" + parseFloat(reslider["params"]["title"]["style"]["width"]) + "px;height:" + parseFloat(reslider["params"]["title"]["style"]["height"])
+                itemtitle.addClass('reslidetitle').addStyle("position:absolute;overflow:hidden;z-index:1;width:100%;height:100%;max-width:" + parseFloat(reslider["params"]["title"]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["params"]["title"]["style"]["height"])
                     + "px;border:" + reslider["params"]["title"]["style"]["border"]["width"] + "px solid #" +
                     reslider["params"]["title"]["style"]["border"]["color"] + ";top:" +
                     reslider["params"]["title"]["style"]["top"] + ";left:" + reslider["params"]["title"]["style"]["left"] + ";border-radius:" +
@@ -466,7 +1265,7 @@ function reslideDrawSlider() {
                     reslider["params"]["title"]["style"]["color"]);
 
                 var innerTitleCover = _reslide();
-                innerTitleCover.addStyle("position:absolute;left:0;top:0;width:" + parseFloat(reslider["params"]["title"]["style"]["width"]) + "px;height:" + parseFloat(reslider["params"]["title"]["style"]["height"]) + "px;opacity:" + reslider["params"]["title"]["style"]["opacity"] / 100 + ";background: #" +
+                innerTitleCover.addStyle("position:absolute;left:0;top:0;width:100%;height:100%;max-width:" + parseFloat(reslider["params"]["title"]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["params"]["title"]["style"]["height"]) + "px;opacity:" + reslider["params"]["title"]["style"]["opacity"] / 100 + ";background: #" +
                     reslider["params"]["title"]["style"]["background"]["color"] + ";font-size:" +
                     reslider["params"]["title"]["style"]["font"]["size"] + "px;color:#" +
                     reslider["params"]["title"]["style"]["color"]);
@@ -480,7 +1279,7 @@ function reslideDrawSlider() {
                 /*** description ***/
 
                 var itemdescription = _reslide();
-                itemdescription.addClass('reslidedescription').addStyle("position:absolute;z-index:1;overflow:hidden;width:" + parseFloat(reslider["params"]["description"]["style"]["width"]) + "px;height:" + parseFloat(reslider["params"]["description"]["style"]["height"])
+                itemdescription.addClass('reslidedescription').addStyle("position:absolute;z-index:1;overflow:hidden;width:100%;height:100%;max-width:" + parseFloat(reslider["params"]["description"]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["params"]["description"]["style"]["height"])
                     + "px;border:" + reslider["params"]["description"]["style"]["border"]["width"] + "px solid #" +
                     reslider["params"]["description"]["style"]["border"]["color"] + ";top:" +
                     reslider["params"]["description"]["style"]["top"] + ";left:" + reslider["params"]["description"]["style"]["left"] + ";border-radius:" +
@@ -489,7 +1288,7 @@ function reslideDrawSlider() {
                     reslider["params"]["description"]["style"]["color"]);
 
                 var innerdescriptionCover = _reslide();
-                innerdescriptionCover.addStyle("position:absolute;left:0;top:0;width:" + parseFloat(reslider["params"]["description"]["style"]["width"]) + "px;height:" + parseFloat(reslider["params"]["description"]["style"]["height"]) + "px;opacity:" + reslider["params"]["description"]["style"]["opacity"] / 100 + ";background: #" +
+                innerdescriptionCover.addStyle("position:absolute;left:0;top:0;width:100%;height:100%;max-width:" + parseFloat(reslider["params"]["description"]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["params"]["description"]["style"]["height"]) + "px;opacity:" + reslider["params"]["description"]["style"]["opacity"] / 100 + ";background: #" +
                     reslider["params"]["description"]["style"]["background"]["color"] + ";font-size:" +
                     reslider["params"]["description"]["style"]["font"]["size"] + "px;color:#" +
                     reslider["params"]["description"]["style"]["color"]);
@@ -514,7 +1313,7 @@ function reslideDrawSlider() {
                     }
                     if (reslider["slides"][slide]['custom'][slidecustom]['type'] == 'button') {
                         var staticElement = _reslide(reslider["slides"][slide]['custom'][slidecustom]['type']);
-                        staticElement.addAttr('u', 'any').addClass('reslidebutton').addStyle("background:none;padding:0;z-index:2;position:absolute;outline:none;overflow:hidden;width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
+                        staticElement.addAttr('u', 'any').addClass('reslidebutton').addStyle("background:none;padding:0;z-index:2;position:absolute;outline:none;overflow:hidden;width:100%;height:100%;max-width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
                             + "px;border:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["width"] + "px solid #" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["color"] + ";top:" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["top"] + ";left:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["left"] + ";border-radius:" +
@@ -538,7 +1337,7 @@ function reslideDrawSlider() {
                     }
                     else if (reslider["slides"][slide]['custom'][slidecustom]['type'] == 'img') {
                         var staticElement = _reslide();
-                        staticElement.addAttr('u', 'any').addClass('reslideimg').addStyle("position:absolute;z-index:1;width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
+                        staticElement.addAttr('u', 'any').addClass('reslideimg').addStyle("position:absolute;z-index:1;width:100%;height:100%;max-width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
                             + "px;border:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["width"] + "px solid #" + reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["color"] + ";top:" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["top"] + ";left:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["left"] + ";border-radius:" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["radius"] + "px;");
@@ -551,7 +1350,7 @@ function reslideDrawSlider() {
                     }
                     else if (reslider["slides"][slide]['custom'][slidecustom]['type'] == 'h3') {
                         var staticElement = _reslide(reslider["slides"][slide]['custom'][slidecustom]['type']);
-                        staticElement.addAttr('u', 'any').addClass('reslideh3').addStyle("margin:0;padding:0;z-index:2;word-wrap: break-word;position:absolute;width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
+                        staticElement.addAttr('u', 'any').addClass('reslideh3').addStyle("margin:0;padding:0;z-index:2;word-wrap: break-word;position:absolute;width:100%;height:100%;max-width:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["slides"][slide]['custom'][slidecustom]["style"]["height"])
                             + "px;border:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["width"] + "px solid #" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["border"]["color"] + ";top:" +
                             reslider["slides"][slide]['custom'][slidecustom]["style"]["top"] + ";left:" + reslider["slides"][slide]['custom'][slidecustom]["style"]["left"] + ";border-radius:" +
@@ -586,7 +1385,7 @@ function reslideDrawSlider() {
                 var itemiframe = _reslide('iframe');
                 itemiframe.addStyle("width: 100%;height: 100%;").addAttr('src', reslider["slides"][slide]["url"], 'frameborder', "0", 'allowfullscreen', "");
                 var itemtitle = _reslide();
-                itemtitle.addClass('reslidetitle').addStyle("position:absolute;z-index:1;width:" + reslider["params"]["title"]["style"]["width"] + ";height:" + reslider["params"]["title"]["style"]["height"]
+                itemtitle.addClass('reslidetitle').addStyle("position:absolute;z-index:1;width:100%;height:100%;max-width:" + reslider["params"]["title"]["style"]["width"] + ";max-height:" + reslider["params"]["title"]["style"]["height"]
                     + ";border:" + reslider["params"]["title"]["style"]["border"]["width"] + "px solid #" +
                     reslider["params"]["title"]["style"]["border"]["color"] + ";background: #" +
                     reslider["params"]["title"]["style"]["background"]["color"] + ";top:" +
@@ -617,7 +1416,7 @@ function reslideDrawSlider() {
             //console.log('CCC',reslider['custom'][custom]['type']);
             if (reslider['custom'][custom]['type'] == 'button') {
                 var staticElement = _reslide(reslider['custom'][custom]['type']);
-                staticElement.addAttr('u', 'any').addClass('reslidebutton').addStyle("background:none;padding:0;z-index:2;overflow:hidden;outline:none;position:absolute;width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
+                staticElement.addAttr('u', 'any').addClass('reslidebutton').addStyle("background:none;padding:0;z-index:2;overflow:hidden;outline:none;position:absolute;width:100%;height:100%;max-width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
                     + "px;border:" + reslider["custom"][custom]["style"]["border"]["width"] + "px solid #" +
                     reslider["custom"][custom]["style"]["border"]["color"] + ";top:" +
                     reslider["custom"][custom]["style"]["top"] + ";left:" + reslider["custom"][custom]["style"]["left"] + ";border-radius:" +
@@ -641,7 +1440,7 @@ function reslideDrawSlider() {
             }
             else if (reslider['custom'][custom]['type'] == 'img') {
                 var staticElement = _reslide();
-                staticElement.addAttr('u', 'any').addClass('reslideimg').addStyle("position:absolute;z-index:1;width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
+                staticElement.addAttr('u', 'any').addClass('reslideimg').addStyle("position:absolute;z-index:1;width:100%;height:100%;max-width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
                     + "px;border:" + reslider["custom"][custom]["style"]["border"]["width"] + "px solid #" + reslider["custom"][custom]["style"]["border"]["color"] + ";top:" +
                     reslider["custom"][custom]["style"]["top"] + ";left:" + reslider["custom"][custom]["style"]["left"] + ";border-radius:" +
                     reslider["custom"][custom]["style"]["border"]["radius"] + "px;");
@@ -654,7 +1453,7 @@ function reslideDrawSlider() {
             }
             else if (reslider['custom'][custom]['type'] == 'h3') {
                 var staticElement = _reslide(reslider['custom'][custom]['type']);
-                staticElement.addAttr('u', 'any').addClass('reslideh3').addStyle("margin:0;padding:0;z-index:2;word-wrap: break-word;position:absolute;width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
+                staticElement.addAttr('u', 'any').addClass('reslideh3').addStyle("margin:0;padding:0;z-index:2;word-wrap: break-word;position:absolute;width:100%;height:100%;max-width:" + parseFloat(reslider["custom"][custom]["style"]["width"]) + "px;max-height:" + parseFloat(reslider["custom"][custom]["style"]["height"])
                     + "px;border:" + reslider["custom"][custom]["style"]["border"]["width"] + "px solid #" +
                     reslider["custom"][custom]["style"]["border"]["color"] + ";top:" +
                     reslider["custom"][custom]["style"]["top"] + ";left:" + reslider["custom"][custom]["style"]["left"] + ";border-radius:" +
@@ -1055,7 +1854,12 @@ document.onkeydown = function (evt) {
             var value = jQuery(this).find(":selected").val();
             jQuery('#reslide-behavior + input').val(value);
         });
-        
+
+        jQuery('#reslide-sortimagesby').on('change', function () {
+            var value = jQuery(this).find(":selected").val();
+            jQuery('#reslide-sortimagesby + input').val(value);
+        });
+
         _reslide._('#reslide-effect-type').on('change', function () {
             var value = _reslide(this).value;
             _reslide._('#reslide-effect-type + input')[0].value = value;
@@ -1083,6 +1887,39 @@ document.onkeydown = function (evt) {
             }
         });
 
+        /*** sharing settings ***/
+        jQuery('#reslide-sharing-background input[type="radio"]').on('change', function () {
+            if (jQuery(this).attr('checked')) {
+                jQuery('#params-sharing-type').val(jQuery(this).attr('rel'));
+                reslideGetSliderParams();
+            }
+        });
+        jQuery('#reslide-sharing-show input[type="checkbox"]').each(function () {
+            jQuery(this).on('change', function () {
+                jQuery(this).attr('checked') ? jQuery(this).val(1) : jQuery(this).val(0);
+                reslideGetSliderParams();
+            });
+        });
+
+        /*** image filters ***/
+        jQuery('#reslide-image-filters input[type="radio"]').on('change', function () {
+            if (jQuery(this).attr('checked')) {
+                jQuery('#params-imagefilters').val(jQuery(this).attr('rel'));
+                reslideGetSliderParams();
+            }
+        });
+
+        /*** image frames ***/
+        jQuery('#reslide-image-frames input[type="radio"]').on('change', function () {
+            if (jQuery(this).attr('checked')) {
+                jQuery('#params-imageframes').val(jQuery(this).attr('rel'));
+                reslideGetSliderParams();
+            }
+        });
+
+        jQuery('.pro_option').on('click', function(){
+            return false;
+        });
 
     });
 })(jQuery);
@@ -1097,6 +1934,103 @@ function reslideGetSliderStyles() {
     });
     reslideGetSliderMainOptions();
     reslideGetSliderParams();
+
+    jQuery('.ruler').width(+reslider["style"]["width"] + 100);
+    
+    if(jQuery('.main-content').width() <= +reslider["style"]["width"]){
+        var $scale = jQuery('.main-content').width() / +reslider["style"]["width"],
+            $translateX = (1 - jQuery('.main-content').width() / +reslider["style"]["width"]) * +reslider["style"]["width"] / 2,
+            $translateY = (1 - $scale) * +reslider["style"]["height"] / 2;
+
+        jQuery('#reslide-slider-construct').css({
+            'transform': 'translate(-' + $translateX + 'px, -' + $translateY + 'px) scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+
+        jQuery('.rul_ruler_Horizontal').css({
+            'transform': 'scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+
+        jQuery('.rul_ruler_Vertical').css({
+            'transform': 'rotate(90deg) scale3d(' + $scale + ',' + $scale + ',' + $scale + ')'
+        });
+
+    } else {
+        jQuery('#reslide-slider-construct').css({
+            'transform': ''
+        });
+
+        jQuery('.rul_ruler_Horizontal').css({
+            'transform': ''
+        });
+
+        jQuery('.rul_ruler_Vertical').css({
+            'transform': 'rotate(90deg)'
+        });
+    }
+
+    jQuery('#general-view').height(parseInt(jQuery('#reslide-height').val()) + 250);
+    jQuery('.ruler').height(parseInt(jQuery('#reslide-height').val()) + 50);
+    
+    if(parseInt(jQuery('#reslide-title-construct').css('left')) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width'))){
+        var $left_t = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width')) > 0) ?
+        parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width')) + 'px' : '0px';
+        jQuery('#reslide-title-construct').css('left', $left_t);
+    }
+
+    if(parseInt(jQuery('#reslide-title-construct').css('top')) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height'))){
+        var $left_t = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height')) > 0) ?
+        parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height')) + 'px' : '0px';
+        jQuery('#reslide-title-construct').css('top', $left_t);
+    }
+
+    if(parseInt(jQuery('#reslide-description-construct').css('left')) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width'))){
+        var $left_d = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width')) > 0) ?
+        parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width')) + 'px' : '0px';
+        jQuery('#reslide-description-construct').css('left', $left_d);
+    }
+
+    if(parseInt(jQuery('#reslide-description-construct').css('top')) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height'))){
+        var $left_d = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height')) > 0) ?
+        parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height')) + 'px' : '0px';
+        jQuery('#reslide-description-construct').css('top', $left_d);
+    }
+
+    if(parseInt(jQuery('.reslide_construct.reslide_h3').css('left')) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width'))){
+        var $left_d = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width')) > 0) ?
+        parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width')) + 'px' : '0px';
+        jQuery('.reslide_construct.reslide_h3').css('left', $left_d);
+    }
+
+    if(parseInt(jQuery('.reslide_construct.reslide_h3').css('top')) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height'))){
+        var $left_d = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height')) > 0) ?
+        parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height')) + 'px' : '0px';
+        jQuery('.reslide_construct.reslide_h3').css('top', $left_d);
+    }
+
+    if(parseInt(jQuery('#reslide_button0').css('left')) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width'))){
+        var $left_d = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width')) > 0) ?
+        parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width')) + 'px' : '0px';
+        jQuery('#reslide_button0').css('left', $left_d);
+    }
+
+    if(parseInt(jQuery('#reslide_button0').css('top')) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height'))){
+        var $left_d = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height')) > 0) ?
+        parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height')) + 'px' : '0px';
+        jQuery('#reslide_button0').css('top', $left_d);
+    }
+
+    if(parseInt(jQuery('#reslide_img0').css('left')) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width'))){
+        var $left_d = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width')) > 0) ?
+        parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width')) + 'px' : '0px';
+        jQuery('#reslide_img0').css('left', $left_d);
+    }
+
+    if(parseInt(jQuery('#reslide_img0').css('top')) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height'))){
+        var $left_d = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height')) > 0) ?
+        parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height')) + 'px' : '0px';
+        jQuery('#reslide_img0').css('top', $left_d);
+    }
+    
     jQuery('#reslide-slider-construct').width(reslider['style']['width']);
     jQuery('#reslide-slider-construct').height(reslider['style']['height']);
     jQuery('#reslide-slider-construct .reslide_construct').css('max-width', reslider['style']['width'] + 'px');
@@ -1142,6 +2076,66 @@ function reslideGetSliderParams(custom) {
         else if (param.length == 3) {
             //	console.log(param);
             reslider[params][param[0]][param[1]][param[2]] = currentvalue;
+            if(param[0] === 'title' && param[1] === 'style' && param[2] === 'left'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width')) > 0) ?
+                    parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-title-construct').css('width')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'title' && param[1] === 'style' && param[2] === 'top'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height')) > 0) ?
+                    parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-title-construct').css('height')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'description' && param[1] === 'style' && param[2] === 'left'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width')) > 0) ?
+                    parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide-description-construct').css('width')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'description' && param[1] === 'style' && param[2] === 'top'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height')) > 0) ?
+                    parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide-description-construct').css('height')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'h30' && param[1] === 'style' && param[2] === 'left'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width')) > 0) ?
+                    parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('width')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'h30' && param[1] === 'style' && param[2] === 'top'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height')) > 0) ?
+                    parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('.reslide_construct.reslide_h3').css('height')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'button0' && param[1] === 'style' && param[2] === 'left'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width')) > 0) ?
+                    parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_button0').css('width')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'button0' && param[1] === 'style' && param[2] === 'top'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height')) > 0) ?
+                    parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_button0').css('height')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'img0' && param[1] === 'style' && param[2] === 'left'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width')) > 0) ?
+                    parseInt(jQuery('#reslide-width').val()) - parseInt(jQuery('#reslide_img0').css('width')) + 'px' : '0px';
+                }
+            }
+            if(param[0] === 'img0' && param[1] === 'style' && param[2] === 'top'){
+                if(parseInt(reslider[params][param[0]][param[1]][param[2]]) > parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height'))){
+                    reslider[params][param[0]][param[1]][param[2]] = (parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height')) > 0) ?
+                    parseInt(jQuery('#reslide-height').val()) - parseInt(jQuery('#reslide_img0').css('height')) + 'px' : '0px';
+                }
+            }
         }
         else if (param.length == 4) {
             //console.log(param);
@@ -1624,6 +2618,66 @@ var initDifferX, initDifferY, moveCondition = {type: ''};
                         }
                     }
                 }
+
+                if(parseInt(mover.style.left) < 0){
+                    mover.style.left = '0px';
+                    zoom.style.left = parseInt(mover.style.width) - 15 + 'px';
+                    remove.style.left = parseInt(mover.style.width) - 15 + 'px';
+                }
+
+                if(parseInt(mover.style.left) > +reslider["style"]["width"] - parseInt(mover.style.width)){
+                    mover.style.left = +reslider["style"]["width"] - parseInt(mover.style.width) + 'px';
+                    zoom.style.left = +reslider["style"]["width"] - 15 + 'px';
+                    remove.style.left = +reslider["style"]["width"] - 15 + 'px';
+                }
+
+                if(parseInt(mover.style.top) < 0){
+                    mover.style.top = '0px';
+                    zoom.style.top = parseInt(mover.style.height) + 'px';
+                    remove.style.top = '0px';
+                }
+
+                var $moverHeight =  parseInt((window.getComputedStyle ? getComputedStyle(mover, "") : mover.currentStyle).height);
+
+                if(parseInt(mover.style.top) > +reslider["style"]["height"] - $moverHeight){
+                    mover.style.top = +reslider["style"]["height"] - $moverHeight + 'px';
+                    zoom.style.top = +reslider["style"]["height"] + 'px';
+                    remove.style.top = +reslider["style"]["height"] - $moverHeight + 'px';
+                }
+                
+                if(parseInt(mover.style.left) < 0){
+                    mover.style.left = '0px';
+                }
+
+                if(parseInt(mover.style.top) < 0){
+                    mover.style.top = '0px';
+                }
+
+                var $scale = (jQuery('.main-content').width() <= +reslider["style"]["width"]) ? jQuery('.main-content').width() / +reslider["style"]["width"] : 1;
+
+                if($scale < 1){
+                    mover.style.top = parseInt(mover.style.top) * (2 - $scale) + 'px';
+                    mover.style.left = parseInt(mover.style.left) * (2 - $scale) + 'px';
+
+                    if ($scale * parseFloat(mover.style.top) > $scale * (jQuery('#reslide-slider-construct').height() - jQuery(mover).outerHeight())) {
+                        if ($this !== 'standing') {
+                            mover.style.top = jQuery('#reslide-slider-construct').height() - jQuery(mover).outerHeight() + 'px';
+                            zoom.style.top = jQuery('#reslide-slider-construct').height() - jQuery(mover).outerHeight() + 'px';
+                        }
+                    }
+
+                    if ( $scale * parseFloat(mover.style.left) > $scale * (jQuery('#reslide-slider-construct').width() - jQuery(mover).outerWidth())) {
+                        if (this !== 'standing') {
+                            mover.style.left = jQuery('#reslide-slider-construct').width() - jQuery(mover).outerWidth() + 'px';
+                            zoom.style.left = jQuery('#reslide-slider-construct').width() - 14 + 'px';
+                        }
+                    }
+
+                    if(parseInt(mover.style.top) > (jQuery('#reslide-slider-construct').height() - jQuery(mover).outerHeight())){
+                        mover.style.top = jQuery('#reslide-slider-construct').height() - jQuery(mover).outerHeight() + 'px';
+                    }
+                }
+                
                 jQuery('#reslide_slider_' + type + '_styling').find('.top').val(mover.style.top);
                 jQuery('#reslide_slider_' + type + '_styling').find('.left').val(mover.style.left);
             }
@@ -1700,9 +2754,37 @@ var initDifferX, initDifferY, moveCondition = {type: ''};
         }
 
         function reslideDoDrag(e) {
+            var $clientX, $clientY,
+                $width = document.getElementById('reslide-slider-construct').getBoundingClientRect().right,
+                $height = document.getElementById('reslide-slider-construct').getBoundingClientRect().bottom,
+                $dragContentWidth, $dragContentHeight;
 
-            bl.style.width = (startWidth + e.clientX - startX) + 'px';
-            bl.style.height = (startHeight + e.clientY - startY) + 'px';
+            $clientX = (e.clientX >= $width) ? $width : e.clientX;
+            $clientY = (e.clientY >= $height) ? $height : e.clientY;
+
+            $dragContentWidth = startWidth + $clientX - startX + 10;
+            $dragContentHeight = startHeight + $clientY - startY + 10;
+
+            if(jQuery('#reslide-width').val() !== undefined){
+                if($dragContentWidth + parseInt(bl.style.left) > jQuery('#reslide-width').val()){
+                    $dragContentWidth = jQuery('#reslide-width').val() - parseInt(bl.style.left);
+                }
+
+                if($dragContentHeight + parseInt(bl.style.top) > jQuery('#reslide-height').val()){
+                    $dragContentHeight = jQuery('#reslide-height').val() - parseInt(bl.style.top);
+                }
+            } else {
+                if($dragContentWidth + parseInt(bl.style.left) > +reslider["style"]["width"]){
+                    $dragContentWidth = +reslider["style"]["width"] - parseInt(bl.style.left);
+                }
+
+                if($dragContentHeight + parseInt(bl.style.top) > +reslider["style"]["height"]){
+                    $dragContentHeight = +reslider["style"]["height"] - parseInt(bl.style.top);
+                }
+            }
+
+            bl.style.width =  $dragContentWidth + 'px';
+            bl.style.height = $dragContentHeight + 'px';
             zoom.style.top = bl.offsetTop + bl.offsetHeight + 'px';
             zoom.style.left = bl.offsetLeft + bl.offsetWidth + 'px';
             jQuery('#reslide_slider_' + type + '_styling').find('.width').val(parseFloat(bl.style.width));

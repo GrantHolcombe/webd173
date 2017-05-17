@@ -2,21 +2,7 @@ jQuery(function ($) {
     /*** Pro ***/
 
     $(document).ready(function () {
-        if (jQuery('#reslide_sliders_list .id').length > 2) {
-            jQuery('.add-slider').click(
-                function () {
-                    alert('There is a 3 sliders limit in lite version of the plugin.');
-                    return false;
-                }
-            )
-            jQuery('.duplicate-icon').click(
-                function () {
-                    alert('There is a 3 sliders limit in lite version of the plugin.');
-                    return false;
-                }
-            )
-        }
-
+       
         function initSave() {
             jQuery('input.text').each(function () {
                 var val = jQuery(this).val();
@@ -70,12 +56,12 @@ jQuery(function ($) {
     });
 
     /*** sortable ***/
-	if(jQuery("#reslide_slider_images_list").length) {
-		var minHeight = jQuery('#reslide_slider_images_list').height();
-        if( jQuery("#reslide_slider_images_list li").length > 1 ){
-            jQuery("#reslide_slider_images_list").sortable({
+    if(jQuery("#reslide_slider_images_list.sortable_list").length) {
+        var minHeight = jQuery('#reslide_slider_images_list.sortable_list').height();
+        if( jQuery("#reslide_slider_images_list.sortable_list li").length > 1 ){
+            jQuery("#reslide_slider_images_list.sortable_list").sortable({
                 start: function () {
-                    jQuery('#reslide_slider_images_list').css('min-height', minHeight + 'px');
+                    jQuery('#reslide_slider_images_list.sortable_list').css('min-height', minHeight + 'px');
                 },
                 stop: function () {
                     var allSlidesCount = jQuery('.reslideitem').length, i = 0;
@@ -88,7 +74,7 @@ jQuery(function ($) {
             });
         }
 
-	}
+    }
     jQuery("body").on('click', '.popup-type', function () {
         var type = jQuery(this).attr('data');
         if (type == 'on') {    

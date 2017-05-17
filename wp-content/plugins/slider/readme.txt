@@ -1,12 +1,12 @@
-=== Responsive Slider ===
+=== Image Slider - Responsive Slider ===
 Contributors: Huge-IT
-Donate link: http://huge-it.com/wordpress-responsive-slider/
-Tags: slider, responsive slider, content slider, image slider, photo slider, slider plugin, layer slider, slideshow, wordpress slider, wordpress slideshow, gallery slider, slide,
+Donate link: https://huge-it.com/wordpress-responsive-slider/
+Tags: slider, responsive slider, content slider, image slider, slideshow,
 Requires at least: 3.0.1
-Tested up to: 4.7.1
-Stable tag: 2.3.7
+Tested up to: 4.7.4
+Stable tag: 2.4.4
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Responsive Slider - best free wordpress tool for slideshow. Use responsive slider to create slideshow, wordpress slider widget, gallery and more.
 
@@ -14,11 +14,12 @@ Responsive Slider - best free wordpress tool for slideshow. Use responsive slide
 
 ### Check out useful links and demo page, get support or contribute for Responsive Slider.
 
-* [Wordpress Responsive Slider](http://huge-it.com/wordpress-responsive-slider/)
-* [Responsive Slider Demo](http://huge-it.com/wordpress-responsive-slider-demo/)
-* [Responsive Slider FAQ](http://huge-it.com/wordpress-responsive-slider-faq/)
-* [Responsive Slider User Manual](http://huge-it.com/wordpress-responsive-slider-user-manual/)
-* [Responsive Slider Support](http://huge-it.com/contact-us/)
+* [Wordpress Responsive Slider](https://huge-it.com/wordpress-responsive-slider/)
+* [Responsive Slider Demo](https://huge-it.com/wordpress-responsive-slider-demo/)
+* [Responsive Slider FAQ](https://huge-it.com/wordpress-responsive-slider-faq/)
+* [Responsive Slider User Manual](https://huge-it.com/wordpress-responsive-slider-user-manual/)
+* [Responsive Slider Support](https://huge-it.com/contact-us/)
+* [Responsive Slider Forum](https://wordpress.org/support/plugin/slider)
 * [Responsive Slider GitHub Project](https://github.com/Huge-IT/slider)
 
 Responsive Slider is a completely new and advanced way to represent your images in slides . Responsive Slider is the best way to promote your website by creating amazing sliders with beautiful transition effects. So be creative with Huge-IT team, use the WordPress Responsive Slider for making your website more competitive. 
@@ -52,6 +53,8 @@ Slider is fully responsive and mobile friendly. All your images will appear as b
  
 *  **Create Description Style** -  Description Style section suggests choosing different effects and colors for the  slider images.
 
+*  **Social Sharing** - Navigate to your slides and click the Social Sharing option in the slider menu in order to add 6 social sharing icons to the slider. You can pick all 6 or pick couple from available Facebook, Twitter, G+, Pinterest, LinkedIn and Tumblr. Besides that the plugin includes 6 themes for social sharing buttons available.
+
 *  **Advanced Drag and Drop Options** -  Drag and Drop feature with some builder function, which you can use on your admin panel, allows you to change the positions of the responsive slider text, description, image, button and more.
 
 *  **Custom Element** - Here we may add: Text, Button and Image on the responsive slider Images. Add desirable styling to the custom elements. 
@@ -83,7 +86,7 @@ Slider is fully responsive and mobile friendly. All your images will appear as b
 
 == Installation ==
 
-### How to install the Pro version of Responsive Slider plugin?
+#### How to install the Pro version of Responsive Slider plugin?
 
 There are two ways to install the Pro version of the plugin.
 
@@ -104,17 +107,16 @@ The second way to install the Pro version of Responsive using is via FTP
 * You will find the plugin installed on your WordPress toolbar in the back end of your website.
 
 
-If you think, that you found a bug in our [WordPress Responsive Slider](http://huge-it.com/wordpress-responsive-slider) plugin or have any question contact us at [info@huge-it.com](mailto:info@huge-it.com)
 
 == Screenshots ==
 
-1.  [WordPress Responsive Slider demo 1](http://huge-it.com/wordpress-responsive-slider-demo/#plugin_demo_wrapper) - Simple video
-11.  [WordPress Responsive Slider demo 1](http://huge-it.com/wordpress-responsive-slider-demo/#plugin_demo_wrapper) - Simple video
-2.  [WordPress Responsive Slider demo 2](http://huge-it.com/wordpress-wordpress-responsive-slider-demo-2-thumbnails/#plugin_demo_wrapper) - Thumbnails
-22.  [WordPress Responsive Slider demo 2](http://huge-it.com/wordpress-wordpress-responsive-slider-demo-2-thumbnails/#plugin_demo_wrapper) - Thumbnails
-3.  [WordPress Responsive Slider demo 3](http://huge-it.com/wordpress-responsive-slider-demo-3-no-controls/#plugin_demo_wrapper) - No controls
-32.  [WordPress Responsive Slider demo 4](http://huge-it.com/wordpress-responsive-slider-demo-4-elements/#plugin_demo_wrapper) - Elements
-4.  [WordPress Responsive Slider Admin Page](http://huge-it.com/wordpress-responsive-slider/)
+1.  [WordPress Responsive Slider demo 1](https://huge-it.com/wordpress-responsive-slider-demo/#plugin_demo_wrapper) - Simple video
+11.  [WordPress Responsive Slider demo 1](https://huge-it.com/wordpress-responsive-slider-demo/#plugin_demo_wrapper) - Simple video
+2.  [WordPress Responsive Slider demo 2](https://huge-it.com/wordpress-wordpress-responsive-slider-demo-2-thumbnails/#plugin_demo_wrapper) - Thumbnails
+22.  [WordPress Responsive Slider demo 2](https://huge-it.com/wordpress-wordpress-responsive-slider-demo-2-thumbnails/#plugin_demo_wrapper) - Thumbnails
+3.  [WordPress Responsive Slider demo 3](https://huge-it.com/wordpress-responsive-slider-demo-3-no-controls/#plugin_demo_wrapper) - No controls
+32.  [WordPress Responsive Slider demo 4](https://huge-it.com/wordpress-responsive-slider-demo-4-elements/#plugin_demo_wrapper) - Elements
+4.  [WordPress Responsive Slider Admin Page](https://huge-it.com/wordpress-responsive-slider/)
 
 
 == Frequently Asked Questions ==
@@ -147,12 +149,87 @@ Please try to submit the payment using another browser, otherwise feel free to c
 
 = May I add my own custom icons for the arrows? =
 
-Custom arrows can be added in the Professional version of the plugin only. 
+Custom arrows can be added in the Professional version of the plugin only.
 
 
-If you think, that you found a bug in our [WordPress Responsive Slider](http://huge-it.com/wordpress-responsive-slider) plugin or have any question contact us at [info@huge-it.com](mailto:info@huge-it.com)
+= My images in Slider look stretched, how can I make the images look perfectly? =
+
+Please try to change the slider image size form General Options. Moreover, the commercial version of Responsive Slider plugin provides Image Behaviour Option in General Options section which you may set Fit or Fill.
+
+
+= How many images can I add to the Slider Plugin? Is there any limitation for the Free version of Slider? =
+
+There is no limitation of adding images to the both (free and paid) versions of Responsive Slider Plugin. You can add unlimited number of images to the plugin and create as many slider as you desire.  
+
+
+= Does the Responsive Slider Provide Filter options to apply for the images =
+
+Slider plugin comes with huge variety of filter options which you can add to the plugin to make each slider look more attractive. 
+
+
+= Can I add Thumbnail images for the slider I create? =
+
+There is a Thumbnail options in the Slider plugin and by enabling it you can show thumbnail images for each slider. Moreover you may display thumbnail images when hovering on the slider images. 
+
+
+= I want to add watermark text on the slider images, is there such option in the plugin? =
+
+Commercial version of Slider plugin provides watermark effect which you can enable for the slider. You can add watermark text or even an image. 
+
+
+= May I share the slider on different social networks? =
+
+Responsive Slider has Social Sharing option which allows your website visitors to share the slider they want in social sharing services like Facebook,Twitter, Google+
+
+
+= Is there any additional styling options for the social sharing buttons in the slider plugin? =
+
+There are 6 share buttons style in the slider plugin and you can pick the one that perfectly suits to your website.
+
+
+If you think, that you found a bug in our [WordPress Responsive Slider](https://huge-it.com/wordpress-responsive-slider) plugin or have any question contact us at [info@huge-it.com](mailto:info@huge-it.com)
 
 == Changelog ==
+
+= 2.4.4 =
+* We have changed the structure of the admin panel to appear more user friendly on big monitors, now the navigation in the admin panel appears user friendly.
+
+= 2.4.3 =
+* 1) We have added post slider functionality, where users can showcase their posts in slider
+* 2) We have fixed multiple bugs including texts and buttons styles on front-end and admin area
+* 3) Fixed the bug with description and title to be fixed and not overlay the frame of image
+* 4) Fixed the issue where the next video button would stop the next track upon the click
+* 5) Fixed the issue when video info and options were not displayed properly
+* 6) We have added additional options for thumbnails of the slider
+* 7) We have fixed minor security issues with SQL by adding additional escapes 
+
+
+= 2.4.2 =
+* 1) We have added five popular filter-effects in order to give Instagram Style look to images by filtering them.
+* 2) We have added Instagram Filter option allowing users to add filters to their images.
+* 3) We have create a new sub-menu named Styles and put into it border styles (Border size,Border color,Border radius options).
+
+= 2.4.1 =
+* 1) We have made UI/UX customization in the back end of the plugin to bring it more user-friendly.
+* 2) We have added an option to add borders to Slider, set colors to borders, determine the size of them. (Pro)
+* 3) We have added "Sort Images By" option.
+
+**FIXED BUGS:**
+
+* 1) Slider is activating after click.
+* 2) Button styles doesn't changed in backgraund view.
+* 3) When the autoplay is disabled,after clicking the arrow it changes the first image to 3rd instead of 2nd.
+* 4)Button-fonts doesn't show in frontend view.
+
+= 2.4.0 =
+* 1) We have added 5 new transition effects.
+* 2) We have added watermark option (Pro).
+
+= 2.3.9 =
+* We had to update the plugin once again, as the GitHub had some errors processing the updated file and cut couple of lines.
+
+= 2.3.8 =
+* We have added 5 new social sharing buttons incuding Facebook, Twitter, G+, Pinterest, LinkedIn and Tumblr.
 
 = 2.3.7 =
 * 1) Added widget support on front end.

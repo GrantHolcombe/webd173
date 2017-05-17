@@ -1720,7 +1720,7 @@ class FMViewForm_maker_fmc {
               if(x.find(jQuery("div[wdid='.$id1.']")).length != 0 && x.find(jQuery("div[wdid='.$id1.']")).css("display") != "none")
               {
               
-              if(jQuery("#wdform_'.$id1.'_element'.$form_id.'").val()!="" && jQuery("#wdform_'.$id1.'_element'.$form_id.'").val().search(/^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/) == -1 )
+              if(jQuery("#wdform_'.$id1.'_element'.$form_id.'").val()!="" && jQuery.trim(jQuery("#wdform_'.$id1.'_element'.$form_id.'").val()).search(/^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/) == -1 )
                 {
                   alert("' . addslashes(__("This is not a valid email address.", 'form_maker')) . '");
                   old_bg=x.find(jQuery("div[wdid='.$id1.']")).css("background-color");

@@ -24,17 +24,31 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 	}
 	?>
 	<script>
+		jQuery(window).load(function(){
+			if(<?php echo esc_attr($params->rightclickprotection); ?>) {
+				jQuery('#reslide_slider_preview').bind("contextmenu", function(e) {
+					e.preventDefault();
+				});
+
+				jQuery(document).keydown(function(e){
+					if(e.which === 123){
+						return false;
+					}
+				});
+			}
+		});
+		
 		const FRONT_IMAGES = '<?php echo RESLIDE_PLUGIN_PATH_FRONT_IMAGES;?>';
 		const _IMAGES = '<?php echo RESLIDE_PLUGIN_PATH_IMAGES;?>';
 			
 		// initialize slider values in slider admin page
 		var reslider = {
-			id: '<?php echo $_id;?>',
-			name: '<?php echo $_slider[0]->title;?>',
+			id: '<?php echo esc_html($_id);?>',
+			name: '<?php echo esc_html($_slider[0]->title);?>',
 			params: JSON.parse('<?php echo $paramsJson;?>'),
 			style: JSON.parse('<?php echo $styleJson;?>'),
 			custom: JSON.parse('<?php echo $customJson;?>'),
-			count: '<?php echo $count;?>',
+			count: '<?php echo esc_html($count);?>',
 			length: 0,
 
 			slides: {}
@@ -322,14 +336,13 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 				background-position: <?php echo esc_attr($params->arrows->style->background->right);?>;
 			}
 
-			/*** title ***/
-			.reslidetitle {
+			.reslidetitle, .reslidedescription {
 				box-sizing: border-box;
 				padding: 1%;
 				overflow: hidden;
 			}
 
-			.reslidetitle h3 {
+			.reslidetitle h3, .reslidedescription h3 {
 				margin: 0;
 				padding: 0;
 				word-wrap: break-word;
@@ -571,7 +584,7 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 		.reslideimg {
 			overflow: hidden;
 			box-sizing: border-box;
-			box-sizing: border-box;
+			height: <?php echo absint($custom->style->height) ? absint($custom->style->height) : 100;?>px !important;
 		}
 
 		#reslide_slider_preview .reslide_content {
@@ -656,6 +669,7 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 			-ms-user-select: none;
 			user-select: none;
 			box-sizing: border-box;
+			max-width: <?php echo absint($style->width);?>px;
 		}
 
 		#reslide-description-construct {
@@ -681,6 +695,7 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 			-ms-user-select: none;
 			user-select: none;
 			box-sizing: border-box;
+			max-width: <?php echo absint($style->width);?>px;
 		}
 
 		#reslide-custom-construct {
@@ -1004,6 +1019,137 @@ function reslide_edit_slide_view( $_slider, $_slides, $_mainslide ) { // Slider'
 				break;
 				}
 		} ?>
+
+		div[id*=slider].reslide_slider_container_preview {
+		<?php
+            switch( (string)$params->imageframes ) {
+        case '1':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_1.png") 100 103 103 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '2':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_2.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '3':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_3.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '4':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_4.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '5':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_5.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '6':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_6.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '7':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_7.png") 100 100 100 100 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        case '8':
+            echo 'border-image: url("' . RESLIDE_PLUGIN_PATH_FRONT_IMAGES. '/image_frames/frame_8.png") 100 135 100 140 stretch stretch; 
+                  border-style: inset;
+                  border-width: 60px;';
+            break;
+        }
+        ?>
+		}
+
+		.reslide_slider_preview .reslideitem img {
+		<?php
+            switch( (string)$params->imagefilters ) {
+            case '1':
+                echo '-webkit-filter: grayscale(1);
+                     filter: grayscale(1);';
+                break;
+            case '2':
+                echo '-webkit-filter: sepia(1);
+                     filter: sepia(1);';
+                break;
+            case '3':
+                echo '-webkit-filter: saturate(4);
+                        filter: saturate(4);';
+                break;
+            case '4':
+                echo '-webkit-filter: hue-rotate(90deg);
+                    filter: hue-rotate(90deg);';
+                break;
+            case '5':
+                echo '-webkit-filter: invert(.8);
+                    filter: invert(.8);';
+                break;
+            case '6':
+                echo '-webkit-filter: opacity(.5);
+                    filter: opacity(.5);';
+                break;
+            case '7':
+                echo '-webkit-filter: brightness(.5);
+                    filter: brightness(.5);';
+                break;
+            case '8':
+                echo '-webkit-filter: contrast(3);
+                    filter: contrast(3);';
+                break;
+            case '9':
+                echo '-webkit-filter: blur(1px);
+                    filter: blur(1px);';
+                break;
+            case '10':
+                echo '-webkit-filter: sepia(1) hue-rotate(200deg);
+                    filter: sepia(1) hue-rotate(200deg);';
+                break;
+            case '11':
+                echo '-webkit-filter: contrast(1.4) saturate(1.8) sepia(.6);
+                    filter: contrast(1.4) saturate(1.8) sepia(.6);';
+                break;
+            case '12':
+                echo '-webkit-filter: grayscale(1) brightness(0.45) contrast(1.05);
+                    filter: grayscale(1) brightness(0.45) contrast(1.05);';
+                break;
+            case '13':
+                echo '-webkit-filter: contrast(110%) brightness(110%) contrast(130%);
+                    filter: contrast(110%) brightness(110%) contrast(130%);';
+                break;
+            case '14':
+                echo '-webkit-filter: contrast(90%) brightness(120%) contrast(85%) hue-rotate(20deg);
+                    filter: contrast(90%) brightness(120%) contrast(85%) hue-rotate(20deg);';
+                break;
+            case '15':
+                echo '-webkit-filter: contrast(100%) brightness(105%) contrast(100%) hue-rotate(270deg);
+                    filter: contrast(100%) brightness(105%) contrast(100%) hue-rotate(270deg);';
+                break;
+            case '16':
+                echo '-webkit-filter: contrast(150%) brightness(100%) contrast(110%);
+                    filter: contrast(150%) brightness(100%) contrast(110%);';
+                break;
+            case '17':
+                echo '-webkit-filter: contrast(85%) brightness(110%) contrast(75%) sepia(22%);
+                    filter: contrast(85%) brightness(110%) contrast(75%) sepia(22%);';
+                break;
+            case '18':
+                echo '-webkit-filter: contrast(100%) brightness(110%) contrast(160%) sepia(30%) hue-rotate(350deg);
+                    filter: contrast(100%) brightness(110%) contrast(160%) sepia(30%) hue-rotate(350deg);';
+                break;
+            case '19':
+                echo '-webkit-filter: contrast(100%) brightness(100%) contrast(100%) sepia(30%);
+                     filter: contrast(100%) brightness(100%) contrast(100%) sepia(30%);';
+                break;
+        }
+        ?>
+		}
+		
 	</style>
 	<?php
 }

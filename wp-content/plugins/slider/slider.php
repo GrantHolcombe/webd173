@@ -1,12 +1,13 @@
 <?php
+
 /*
 Plugin Name: Huge IT Responsive Slider
-Plugin URI: http://huge-it.com/wordpress-responsive-slider
+Plugin URI: https://huge-it.com/wordpress-responsive-slider
 Description: Create the most stunning sliders for your mobile friendly website with Huge-IT Responsive Slider.
-Version: 2.3.7
+Version: 2.4.4
 Author: Huge-IT
-Author URI: http://huge-it.com/
-License: GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+Author URI: https://huge-it.com/
+License: GNU/GPLv3 https://www.gnu.org/licenses/gpl-3.0.html
 Text Domain: reslide
 */
 
@@ -909,7 +910,7 @@ INSERT INTO `$table` (`title`, `sliderid`, `published`, `slide`, `description`, 
 			array(
 				'title'=>'First Slider',
 				'type'=>'simple',
-				'params'=>'{"autoplay":1,"pauseonhover":1,"rightclickprotection":1,"behavior":"1","effect":{"type":3,"duration":1500,"interval":1000},"thumbnails":{"show":0,"positioning":0},"custom":{"type":"text"},"title":{"show":1,"position":"1","style":{"width":213,"height":61,"left":"571.375px","top":"14.7031px","color":"FFFFFF","opacity":0,"font":{"size":18},"border":{"color":"FFFFFF","width":1,"radius":2},"background":{"color":"FFFFFF","hover":"30FF4F"}}},"description":{"show":1,"position":"1","style":{"width":768,"height":116,"left":"16.375px","top":"345.703px","color":"FFFFFF","opacity":80,"font":{"size":14},"border":{"color":"3478FF","width":0,"radius":2},"background":{"color":"000000","hover":"000000"}}},"arrows":{"show":2,"type":1,"style":{"background":{"width":"49","height":"49","left":"91px 46px","right":"-44px 1px","hover":{"left":"91px 46px","right":"-44px 1px"}}}},"bullets":{"show":0,"type":"0","position":0,"autocenter":"0","rows":1,"s_x":10,"s_y":10,"orientation":1,"style":{"background":{"width":"60","height":"60","color":{"hover":"646464","active":"30FF4F","link":"CCCCCC"}},"position":{"top":"16px","left":"10px"}}}}',
+				'params'=>'{"imageframes":"0","imagefilters":"0","sortimagesby":"0","sharing":{"show":{"facebook":0,"twitter":0,"googleplus":0,"pinterest":0,"linkedin":0,"tumblr":0},"type":0},"autoplay":1,"pauseonhover":1,"rightclickprotection":1,"behavior":"0","effect":{"type":3,"duration":1500,"interval":1000},"thumbnails":{"show":0,"positioning":0},"custom":{"type":"text"},"title":{"show":1,"position":"1","style":{"width":213,"height":61,"left":"571.375px","top":"14.7031px","color":"FFFFFF","opacity":0,"font":{"size":18},"border":{"color":"FFFFFF","width":1,"radius":2},"background":{"color":"FFFFFF","hover":"30FF4F"}}},"description":{"show":1,"position":"1","style":{"width":768,"height":116,"left":"16.375px","top":"345.703px","color":"FFFFFF","opacity":80,"font":{"size":14},"border":{"color":"3478FF","width":0,"radius":2},"background":{"color":"000000","hover":"000000"}}},"arrows":{"show":2,"type":1,"style":{"background":{"width":"49","height":"49","left":"91px 46px","right":"-44px 1px","hover":{"left":"91px 46px","right":"-44px 1px"}}}},"bullets":{"show":0,"type":"0","position":0,"autocenter":"0","rows":1,"s_x":10,"s_y":10,"orientation":1,"style":{"background":{"width":"60","height":"60","color":{"hover":"646464","active":"30FF4F","link":"CCCCCC"}},"position":{"top":"16px","left":"10px"}}}}',
 				'time'=>'2016-05-02 10:58:58',
 				'slide'=>'NULL',
 				'style'=>'{"background":"blue;","border":"1px solid red;","color":"yellow","width":"800","height":"480","marginLeft":"0","marginRight":"0","marginTop":"0","marginBottom":"0"}',
@@ -997,11 +998,11 @@ INSERT INTO `$table` (`title`, `sliderid`, `published`, `slide`, `description`, 
 		);
 	}
 	
-	$query1 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS." ";
+	$query1 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
 	$rows = $wpdb->get_results($query1);
 	foreach($rows as $row){
 		if( strpos( $row->params, 'behavior' ) === false ) {
-			$new_param1 = substr_replace( $row->params, '"behavior":1,', 1, 0 );
+			$new_param1 = substr_replace( $row->params, '"behavior":0,', 1, 0 );
 			$wpdb->update(
 				RESLIDE_TABLE_SLIDERS,
 				array( 'params' =>  $new_param1),
@@ -1010,7 +1011,7 @@ INSERT INTO `$table` (`title`, `sliderid`, `published`, `slide`, `description`, 
 		}
 	}
 
-	$query2 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS." ";
+	$query2 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
 	$rows2 = $wpdb->get_results($query2);
 	foreach($rows2 as $row2){
 		if( strpos( $row2->params, 'rightclickprotection' ) === false ) {
@@ -1023,6 +1024,57 @@ INSERT INTO `$table` (`title`, `sliderid`, `published`, `slide`, `description`, 
 		}
 	}
 
+	$query3 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
+	$rows3 = $wpdb->get_results($query3);
+	foreach($rows3 as $row3){
+		if( strpos( $row3->params, 'sharing' ) === false ) {
+			$new_param3 = substr_replace( $row3->params, '"sharing":{"show":{"facebook":0,"twitter":0,"googleplus":0,"pinterest":0,"linkedin":0,"tumblr":0},"type":0},', 1, 0 );
+			$wpdb->update(
+				RESLIDE_TABLE_SLIDERS,
+				array( 'params' =>  $new_param3),
+				array( 'id' => $row3->id )
+			);
+		}
+	}
+
+	$query4 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
+	$rows4 = $wpdb->get_results($query4);
+	foreach($rows4 as $row4){
+		if( strpos( $row4->params, 'sortimagesby' ) === false ) {
+			$new_param4 = substr_replace( $row4->params, '"sortimagesby":"0",', 1, 0 );
+			$wpdb->update(
+				RESLIDE_TABLE_SLIDERS,
+				array( 'params' =>  $new_param4),
+				array( 'id' => $row4->id )
+			);
+		}
+	}
+
+	$query5 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
+	$rows5 = $wpdb->get_results($query5);
+	foreach($rows5 as $row5){
+		if( strpos( $row5->params, 'imagefilters' ) === false ) {
+			$new_param5 = substr_replace( $row5->params, '"imagefilters":"0",', 1, 0 );
+			$wpdb->update(
+				RESLIDE_TABLE_SLIDERS,
+				array( 'params' =>  $new_param5),
+				array( 'id' => $row5->id )
+			);
+		}
+	}
+
+	$query6 = "SELECT id, params FROM ".RESLIDE_TABLE_SLIDERS;
+	$rows6 = $wpdb->get_results($query6);
+	foreach($rows6 as $row6){
+		if( strpos( $row6->params, 'imageframes' ) === false ) {
+			$new_param6 = substr_replace( $row6->params, '"imageframes":"0",', 1, 0 );
+			$wpdb->update(
+				RESLIDE_TABLE_SLIDERS,
+				array( 'params' =>  $new_param6),
+				array( 'id' => $row6->id )
+			);
+		}
+	}
 }
 
 

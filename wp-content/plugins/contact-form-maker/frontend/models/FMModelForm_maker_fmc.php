@@ -92,40 +92,47 @@ class FMModelForm_maker_fmc {
         }
       }
 	  elseif (isset($_POST["g-recaptcha-response"])){
-		$privatekey= isset($fmc_settings['private_key']) ? $fmc_settings['private_key'] : '';	
-		$captcha = $_POST['g-recaptcha-response'];
-		$url = 'https://www.google.com/recaptcha/api/siteverify';
-		$data = array(
-			'secret' => $privatekey,
-			'response' => $captcha,
-			'remoteip' => $_SERVER['REMOTE_ADDR']
-		);
-    
-		$curlConfig = array(
-			CURLOPT_URL => $url,
-			CURLOPT_POST => true,
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_POSTFIELDS => $data
-		);
+			$privatekey= isset($fmc_settings['private_key']) ? $fmc_settings['private_key'] : '';	
+			$captcha = $_POST['g-recaptcha-response'];
+			$url = 'https://www.google.com/recaptcha/api/siteverify';
+			$data = array(
+				'secret' => $privatekey,
+				'response' => $captcha,
+				'remoteip' => $_SERVER['REMOTE_ADDR']
+			);
+			
+			$curlConfig = array(
+				CURLOPT_URL => $url,
+				CURLOPT_POST => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_POSTFIELDS => $data
+			);
 
-		$ch = curl_init();
-		curl_setopt_array($ch, $curlConfig);
-		$response = curl_exec($ch);
-		curl_close($ch);
-    
-		$jsonResponse = json_decode($response);
+			$ch = curl_init();
+			curl_setopt_array($ch, $curlConfig);
+			$response = curl_exec($ch);
+			curl_close($ch);
+			
+			$jsonResponse = json_decode($response);
 
-		if ($jsonResponse->success == "true")
-			$correct = TRUE;
-		else {
-			?>
-			<script>alert("<?php echo addslashes(__('Error, incorrect Security code.', 'form_maker')); ?>");</script>
-			<?php
-		}
+			if ($jsonResponse->success == "true")
+				$correct = TRUE;
+			else {
+				?>
+				<script>alert("<?php echo addslashes(__('Error, incorrect Security code.', 'form_maker')); ?>");</script>
+				<?php
+			}
 	  }
-      else {
-        $correct = TRUE;
-      }
+		else {
+			if(preg_match('(type_arithmetic_captcha|type_captcha|type_recaptcha)', $form -> label_order_current) === 1){
+				?>
+          <script>alert("<?php echo addslashes(__('Error, incorrect Security code.', 'form_maker')); ?>");</script>
+        <?php 
+				$correct = false;
+			}
+			else
+				$correct = true;
+		}
       if ($correct) {
         
         $ip=$_SERVER['REMOTE_ADDR'];
